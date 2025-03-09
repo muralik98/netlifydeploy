@@ -16,19 +16,43 @@ pipeline {
                 // Install dependencies directly without virtual environment
                 sh 'pip install --upgrade pip'
                 sh 'pip install -r requirements.txt'
-                // Ignore the pip as root warning as it's expected in Docker
             }
         }
+
+        stage('Run Tests') {
+            steps {
+                sh 'python -m pytest tests/'
+            }
+        }
+
         stage('Prepare Netlify Functions') {
             steps {
                 sh 'mkdir -p netlify/functions'
-                sh 'cp app.py netlify/functions/'
+                // Copy all files and directories to the Netlify functions directory
+                sh 'cp -r * netlify/functions/'
+                // Exclude the netlify directory itself to avoid recursion
+                sh 'rm -rf netlify/functions/netlify'
+                // List contents to verify
+                sh 'ls -la netlify/functions'
+            }
+        }
+
+        stage('Install Node.js and Netlify CLI') {
+            steps {
+                // Install Node.js and npm in the Python container
+                sh 'apt-get update && apt-get install -y curl'
+                sh 'curl -fsSL https://deb.nodesource.com/setup_16.x | bash -'
+                sh 'apt-get install -y nodejs'
+                // Verify installations
+                sh 'node --version'
+                sh 'npm --version'
+                // Install Netlify CLI
+                sh 'npm install -g netlify-cli'
             }
         }
 
         stage('Deploy to Netlify') {
             steps {
-                sh 'npm install -g netlify-cli'
                 sh 'netlify deploy --prod --site=${NETLIFY_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN}'
             }
         }
