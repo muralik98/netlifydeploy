@@ -24,11 +24,11 @@ pipeline {
         stage('Prepare Netlify Functions') {
             steps {
                 sh 'mkdir -p netlify/functions'
-                // Copy all files and directories to the Netlify functions directory
-                sh 'cp -r * netlify/functions/'
-                // Exclude the netlify directory itself to avoid recursion
-                sh 'rm -rf netlify/functions/netlify'
-                // List contents to verify
+                // Copy all necessary files individually, excluding netlify directory
+                sh 'cp -r app.py templates requirements.txt netlify/functions/'
+                sh 'cp -r Dockerfile Jenkinsfile netlify/functions/ || true'
+                // Add any other specific directories or files here
+                // Verify contents
                 sh 'ls -la netlify/functions'
             }
         }
@@ -39,9 +39,6 @@ pipeline {
                 sh 'apt-get update && apt-get install -y curl'
                 sh 'curl -fsSL https://deb.nodesource.com/setup_16.x | bash -'
                 sh 'apt-get install -y nodejs'
-                // Verify installations
-                sh 'node --version'
-                sh 'npm --version'
                 // Install Netlify CLI
                 sh 'npm install -g netlify-cli'
             }
