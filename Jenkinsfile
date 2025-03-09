@@ -11,19 +11,7 @@ pipeline {
         VENV_PATH = "venv"
     }
 
-    stages {
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    sh """
-                    sudo apt update
-                    sudo apt install -y python3-venv python3-pip
-                    sudo apt install -y python3-virtualenv || pip install --user virtualenv
-                    """
-                }
-            }
-        }
-
+   stages {
         stage('Setup Python Environment') {
             steps {
                 script {
@@ -59,3 +47,4 @@ pipeline {
         }
     }
 }
+🔹 Key Fixes
