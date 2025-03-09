@@ -11,40 +11,34 @@ pipeline {
         VENV_PATH = "venv"
     }
 
-   stages {
+    stages {
         stage('Setup Python Environment') {
             steps {
-                script {
-                    sh """
-                    python3 -m virtualenv ${VENV_PATH} || python3 -m venv ${VENV_PATH}
-                    source ${VENV_PATH}/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                    """
-                }
+                sh 'python3 -m ensurepip --default-pip'  // Ensure pip is installed
+                sh 'python3 -m venv venv || virtualenv venv'  // Use venv or fallback to virtualenv
+                sh './venv/bin/python -m pip install --upgrade pip'  // Upgrade pip
+                sh './venv/bin/pip install -r requirements.txt'  // Install dependencies
             }
         }
 
-        stage('Build Netlify Functions') {
+        stage('Run Tests') {
             steps {
-                sh 'cp -r app.py netlify/functions/'
+                sh './venv/bin/python -m pytest tests/'
+            }
+        }
+
+        stage('Prepare Netlify Functions') {
+            steps {
+                sh 'mkdir -p netlify/functions'
+                sh 'cp app.py netlify/functions/'
             }
         }
 
         stage('Deploy to Netlify') {
             steps {
-                sh 'npx netlify deploy --prod --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN'
+                sh 'npm install -g netlify-cli'
+                sh 'netlify deploy --prod --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN'
             }
         }
     }
-
-    post {
-        success {
-            echo "Deployment to Netlify successful!"
-        }
-        failure {
-            echo "Deployment failed. Check logs."
-        }
-    }
 }
-🔹 Key Fixes
