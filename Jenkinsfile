@@ -27,7 +27,6 @@ pipeline {
                 // Copy all necessary files individually, excluding netlify directory
                 sh 'cp -r app.py templates requirements.txt netlify/functions/'
                 sh 'cp -r Dockerfile Jenkinsfile netlify/functions/ || true'
-                // Add any other specific directories or files here
                 // Verify contents
                 sh 'ls -la netlify/functions'
             }
@@ -46,7 +45,8 @@ pipeline {
 
         stage('Deploy to Netlify') {
             steps {
-                sh 'netlify deploy --prod --site=${NETLIFY_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN}'
+                // Specify the publish directory explicitly with the --dir flag
+                sh 'netlify deploy --prod --dir=netlify --site=${NETLIFY_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN}'
             }
         }
     }
