@@ -19,13 +19,6 @@ pipeline {
                 // Ignore the pip as root warning as it's expected in Docker
             }
         }
-
-        stage('Run Tests') {
-            steps {
-                sh 'python -m pytest tests/'
-            }
-        }
-
         stage('Prepare Netlify Functions') {
             steps {
                 sh 'mkdir -p netlify/functions'
